@@ -9,10 +9,13 @@ object Part1 {
 
   // 1.1 Apply 'mul2' using pattern matching to the given integer (.5pts)
   def mul2(i: Int): Int = i * 2
-  def applyMul2WithPatternMatching(i: Option[Int]): Option[Int] = ???
+  def applyMul2WithPatternMatching(i: Option[Int]): Option[Int] = i match {
+    case Some(i) => Some(2 * i)
+    case None => None
+  }
 
   // 1.2 Apply 'mul2' WITHOUT using pattern matching to the given integer (.5pts)
-  def applyMul2WithoutPatternMatching(i: Option[Int]): Option[Int] = ???
+  def applyMul2WithoutPatternMatching(i: Option[Int]): Option[Int] = if(i==Some(i)) i else None
 
   // 1.3 Refactor the following code using pattern matching (1pts)
   sealed trait Animal
@@ -20,7 +23,7 @@ object Part1 {
   case object Bird extends Animal
   case class Dog(age: Int) extends Animal
 
-  def formatAnimal(animal: Animal): String =
+  /*def formatAnimal(animal: Animal): String =
     if (animal == Cat)
       "It's a cat"
     else if (animal == Bird)
@@ -28,32 +31,79 @@ object Part1 {
     else if (animal.isInstanceOf[Dog])
       s"It's a ${animal.asInstanceOf[Dog].age} year old dog"
     else
-      throw new RuntimeException("This should not happen but I'm a Java developer !")
+      throw new RuntimeException("This should not happen but I'm a Java developer !")*/
+
+  def formatAnimal(animal: Animal): String = animal match{
+    case Cat => "It's a cat"
+    case Bird => "It's a bird"
+    case _ if (animal.isInstanceOf[Dog]) => s"It's a ${animal.asInstanceOf[Dog].age} year old dog"
+    case _ => throw new RuntimeException("This should not happen but I'm a Java developer !")
+  }
+
 
   // 1.4 Find the index of the given element if any, use recursivity (1pts)
-  def indexOf[A](l: List[A], a: A): Option[Int] = ???
+  def indexOf[A](l: List[A], a: A): Option[Int] = l match {
+    case x::xs => Some(l.foldRight(0)((x,acc) => if(x == a)  acc else acc + 1))
+    case Nil => None
+  }
 
   // 1.5 Throw away all errors (.5pts)
   case class Error(message: String)
-  def keepValid[A](l: List[Either[Error, A]]): List[A] = ???
+  def keepValid[A](l: List[Either[Error, A]]): List[A] = l match {
+    case x::xs if x == Left(Error("err")) =>  keepValid(xs)
+    case x::xs => x.right.get::keepValid(xs)
+    case Nil => Nil
+  }
 
   // 1.6 Aggregate values (.5pts)
-  def aggregate[A](l: List[A], combine: (A, A) => A, empty: A): A = ???
+  def aggregate[A](l: List[A], combine: (A, A) => A, empty: A): A = l match {
+    case x::xs => xs.foldLeft(x)(combine)
+    case Nil => empty
+  }
 
   // 1.7 Aggregate valid values (.5pts)
-  def aggregateValid[A](l: List[Either[Error, A]], combine: (A, A) => A, empty: A): A = ???
+  def aggregateValid[A](l: List[Either[Error, A]], combine: (A, A) => A, empty: A): A = l match {
+    case x::xs => aggregate(keepValid(xs), combine, empty)
+    case Nil => empty
+  }
 
   // 1.8 Create the Monoid typeclass and rewrite the above "aggregateValid" (.5pts)
-  def aggregateValidM = ???
+
+  trait Monoid[A] {
+    def empty: A
+    def combine(x: A, y: A): A
+  }
+
+  implicit val aggregateValidMInt : Monoid[Int] = new Monoid[Int] {
+    override def empty: Int = empty
+
+    override def combine(a1: Int, a2: Int): Int = a1+a2
+  }
+
+  def aggregateValidM[A](l: List[Either[Error, A]])(implicit ev : Monoid[A]): A = l match {
+    case Nil => ev.empty
+    case x::xs => aggregate(keepValid(xs),ev.combine,ev.empty)
+  }
 
   // 1.9 Implement the Monoid typeclass for Strings and give an example usage with aggregateValidM (.5pts)
 
+  implicit val aggregateValidMSting : Monoid[String] = new Monoid[String] {
+    override def empty: String = empty
+
+    override def combine(a1: String, a2: String): String = a1+a2
+  }
+
+  def aggregateValidMSting[String](l: List[Either[Error, String]])(implicit ev : Monoid[String]): String = l match {
+    case Nil => ev.empty
+    case x::xs => aggregate(keepValid(xs),ev.combine,ev.empty)
+  }
+
   // 1.10 Refactor the following object oriented hierarchy with an ADT (1.5pts)
-  abstract class FinancialAsset {
+  sealed trait FinancialAsset {
     def computeEarnings: Double
   }
 
-  abstract class FlatRateAsset extends FinancialAsset {
+  sealed trait FlatRateAsset extends FinancialAsset {
     protected val rate: Double
     protected val amount: Double
 

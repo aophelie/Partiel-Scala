@@ -1,4 +1,5 @@
 package com.fr.upem.partiel
+import com.fr.upem.partiel.Part2.AccountOperations
 
 // Part2 (10pts)
 /**
@@ -12,8 +13,31 @@ object Part2 {
 
   // 2.1 Modelling.
   // Create a model for the user's bank account
+  class UserAccount(n:String, p:String, a:Float, b:Double){
+    var name = n
+    var surName = p
+    var accountNum = a
+    var balance = b
+
+  }
+
   // Create a model for a transaction (has an amount and a date)
+
+  class Transaction(ident:Int, a: Float, d:Long, c:CategorieTransactions){
+    var id = ident
+    var amount = a
+    var date = d
+    var categorie = c
+    override def toString: String = id+" "+ amount+" "+ date +" "+ categorie
+  }
+  //val tr = new Transaction(1,300.0,"08/01/2019", new CategorieTransactions("check-deposit"))
+  //System.out.append(tr.toString)
+
   // Create a model for the following categories [salary, purchase, check deposit, check payment, withdrawal]
+  class CategorieTransactions(desc : String){
+    var name = desc
+    //desc = "salary" || "purchase" || "check-deposit" || "check-payment" || "withdrawal"
+  }
 
   // 2.2 Create api
   // Create an api that allows for:
@@ -21,14 +45,34 @@ object Part2 {
   // - Adding a transaction to a bank account with it's category
   // - Categorizing or recategorizing an existing transaction
   //
+  class AccountOperations {
+    def adding(t: Transaction, a:UserAccount): Unit = t.categorie.name match{
+      case "salary" => a.balance += t.amount
+      case "purchase" => if(a.balance>=t.amount)a.balance -= t.amount
+      case "check-deposit" => a.balance += t.amount
+      case "check-payment" => if(a.balance>=t.amount)a.balance -= t.amount
+      case "withdrawal" => if(a.balance>=t.amount)a.balance -= t.amount
+    }
+    def adding(t: Transaction, a:UserAccount, c: String): Unit ={
+      adding(categorizing(t,c),a)
+    }
+    def categorizing(t: Transaction, s:String): Transaction ={
+      new Transaction(t.id, t.amount, t.date, new CategorieTransactions(s))
+    }
+  }
+
   // help: The bank account must save, for each transaction id, the transaction and it's eventual category
   // This could be achieved through a structure of this kind:
   // BankAccount(transactions: Map[TransactionId, CategorizedTransaction])
 
   // 2.3 Use the api that you just created.
   // - Create an empty account
+  val user = new UserAccount("Toto", "Tata", 123, 0)
   // - Add a transaction with id 1 of amount -13 (and any date)
+  val trans1 = new Transaction(1, -13 , 8012019, new CategorieTransactions(""))
+  //AccountOperations op = new AccountOperations
   // - Add a transaction with id 2 of amount -50 (and any date)
+  val trans2 = new Transaction(2, -50 , 8012019, new CategorieTransactions(""))
   // - Add a check payment with id 3 of amount 650 (and any date)
   // - Categorize the second transaction (id "2") as a withdrawal
   // - (Re)categorize the third transaction (id "3") as check deposit

@@ -40,7 +40,7 @@ class Part1Test extends FlatSpec with Matchers {
   }
 
   "aggregateValid" should "combine valid elements" in {
-    aggregateValid[Int](List(Right(1), Left(Error("err")), Right(3)), _ + _, 0) should equal(4)
+    aggregateValid[Int](List(Right(1), Left(Error("err")), Right(3)),_ + _, 0) should equal(4)
   }
 
   "computeTotalEarnings" should "compute earnings of given assets" in {
