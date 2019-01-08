@@ -15,7 +15,7 @@ object Part1 {
   }
 
   // 1.2 Apply 'mul2' WITHOUT using pattern matching to the given integer (.5pts)
-  def applyMul2WithoutPatternMatching(i: Option[Int]): Option[Int] = if(i==Some(i)) i else None
+  def applyMul2WithoutPatternMatching(i: Option[Int]): Option[Int] = if(i==Some) i*2 else None
 
   // 1.3 Refactor the following code using pattern matching (1pts)
   sealed trait Animal
